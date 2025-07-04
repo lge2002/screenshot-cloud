@@ -1,0 +1,194 @@
+[
+    {
+        "city": "Ariyalur",
+        "values": "4.49%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Chennai",
+        "values": "42.61%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Coimbatore",
+        "values": "25.46%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Cuddalore",
+        "values": "0.24%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Dharmapuri",
+        "values": "0.00%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Dindigul",
+        "values": "76.21%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Erode",
+        "values": "1.43%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Kancheepuram",
+        "values": "26.61%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Kanniyakumari",
+        "values": "0.00%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Karur",
+        "values": "7.22%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Krishnagiri",
+        "values": "1.74%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Madurai",
+        "values": "10.20%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Nagappattinam",
+        "values": "31.31%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Namakkal",
+        "values": "0.92%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Perambalur",
+        "values": "1.45%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Pudukkottai",
+        "values": "36.39%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Ramanathapuram",
+        "values": "2.24%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Salem",
+        "values": "3.65%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Sivaganga",
+        "values": "2.47%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Thanjavur",
+        "values": "35.56%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "TheNilgiris",
+        "values": "12.42%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Theni",
+        "values": "53.24%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Thiruvallur",
+        "values": "52.67%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Thiruvarur",
+        "values": "34.13%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Thoothukkudi",
+        "values": "1.73%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Tiruchirappalli",
+        "values": "35.11%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Tirunelveli",
+        "values": "2.37%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Tiruppur",
+        "values": "9.06%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Tiruvannamalai",
+        "values": "14.89%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Vellore",
+        "values": "8.73%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Viluppuram",
+        "values": "2.64%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    },
+    {
+        "city": "Virudunagar",
+        "values": "5.12%",
+        "type": "Cloud Coverage",
+        "timestamp": "2025-07-04 16:15:00"
+    }
+]
