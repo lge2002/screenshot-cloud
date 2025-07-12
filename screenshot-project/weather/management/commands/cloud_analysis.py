@@ -128,23 +128,23 @@ class Command(BaseCommand):
     def handle(self, **kwargs):
         self.stdout.write(self.style.SUCCESS('Starting Windy.com cloud analysis automation for all Tamil Nadu districts...'))
 
-        shapefile_path = "C:/Users/tamilarasans/Downloads/gadm41_IND_2.json/gadm41_IND_2.json"
+        shapefile_path = r"C:\Users\tamilarasans\Desktop\cloud_project\screenshot-project\weather\management\commands\TAMIL NADU_DISTRICTS.geojson"
         if not os.path.exists(shapefile_path):
             self.stderr.write(self.style.ERROR(f"Critical Error: Shapefile not found at {shapefile_path}. Exiting."))
             return
 
         try:
             gdf = gpd.read_file(shapefile_path)
-            tamil_nadu_gdf = gdf[gdf['NAME_1'] == 'TamilNadu']
+            tamil_nadu_gdf = gdf[gdf['stname'].str.strip().str.upper() == 'TAMIL NADU']
             if tamil_nadu_gdf.empty:
-                self.stderr.write(self.style.ERROR("Error: 'TamilNadu' not found in shapefile under 'NAME_1'. Please check the shapefile content."))
+                self.stderr.write(self.style.ERROR("Error: 'TAMIL NADU' not found in shapefile under 'stname'. Please check the shapefile content."))
                 return
 
             tamil_nadu_gdf = tamil_nadu_gdf.to_crs("EPSG:4326")
 
-            all_tn_districts = tamil_nadu_gdf['NAME_2'].unique().tolist()
+            all_tn_districts = tamil_nadu_gdf['dtname'].unique().tolist()
             if not all_tn_districts:
-                self.stderr.write(self.style.ERROR("Error: No districts found for 'TamilNadu' under 'NAME_2' in shapefile. Exiting."))
+                self.stderr.write(self.style.ERROR("Error: No districts found for 'TAMIL NADU' under 'dtname' in shapefile. Exiting."))
                 return
 
             self.stdout.write(f"Found {len(all_tn_districts)} districts in Tamil Nadu: {', '.join(all_tn_districts)}")
@@ -152,6 +152,7 @@ class Command(BaseCommand):
         except Exception as e:
             self.stderr.write(self.style.ERROR(f"Error loading or processing shapefile initially: {e}. Exiting."))
             return
+
 
         while True:
             self.stdout.write("\n" + "="*50)
@@ -189,9 +190,7 @@ class Command(BaseCommand):
                 chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
                 chrome_options.add_experimental_option('useAutomationExtension', False)
                 chrome_options.add_argument("--window-size=1920,1080")
-                # chrome_options.add_argument("--headless")
-                # chrome_options.add_argument("--disable-gpu")
-                # chrome_options.add_argument("--no-sandbox")
+
 
                 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
@@ -336,7 +335,7 @@ class Command(BaseCommand):
                     os.makedirs(district_masked_folder, exist_ok=True)
                     masked_cropped_path = os.path.join(district_masked_folder, f"{timestamp_str}_{district_name.lower().replace(' ', '_')}_masked.png")
                     
-                    current_district_gdf = tamil_nadu_gdf[tamil_nadu_gdf['NAME_2'] == district_name]
+                    current_district_gdf = tamil_nadu_gdf[tamil_nadu_gdf['dtname'] == district_name]
 
                     if current_district_gdf.empty:
                         self.stderr.write(self.style.WARNING(f"Warning: {district_name} not found in the filtered Tamil Nadu shapefile data. Skipping."))

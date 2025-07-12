@@ -16,7 +16,7 @@ import numpy as np
 import rasterio
 from rasterio.features import rasterize
 from rasterio.transform import from_bounds
-from sklearn.cluster import KMeans
+from sklearn.cluster import KMeans # Unused import, can be removed if not needed elsewhere
 from shapely.ops import unary_union
 import warnings
 import io
@@ -24,7 +24,7 @@ import base64
 import shutil
 warnings.filterwarnings("ignore")
 
-SHAPEFILE_PATH = os.path.join(settings.BASE_DIR, 'weather', 'management', 'commands', 'gadm41_IND_2.json')
+SHAPEFILE_PATH = os.path.join(settings.BASE_DIR, 'weather', 'management', 'commands', 'TAMIL NADU_DISTRICTS.geojson')
 FINAL_MIN_LON = 74.80
 FINAL_MAX_LON = 80.37
 FINAL_MIN_LAT = 7.98
@@ -50,9 +50,39 @@ def _generate_image_data_for_timestamp(
         if not os.path.exists(base_image_path_for_this_timestamp):
             print(f"Warning: Base image '{base_image_path_for_this_timestamp}' not found. Skipping image processing for this timestamp.")
             return None
-        img_pil = Image.open(base_image_path_for_this_timestamp).convert("RGB")
-        img_np = np.array(img_pil) # Convert PIL image to NumPy array for numerical operations
-        height, width, _ = img_np.shape # Get dimensions of the image (height, width, channels)
+        
+
+        try:
+            img_pil = Image.open(base_image_path_for_this_timestamp).convert("RGB")
+            img_np = np.array(img_pil) # Convert PIL image to NumPy array for numerical operations
+            if img_np.ndim != 3 or img_np.shape[2] not in [3, 4]:
+                print(f"Error: Image at '{base_image_path_for_this_timestamp}' is not a valid RGB/RGBA image. Skipping.")
+                return None
+            height, width, _ = img_np.shape # Get dimensions of the image (height, width, channels)
+        except Exception as e:
+            print(f"Error: Could not open or process image '{base_image_path_for_this_timestamp}': {e}")
+            return None
+
+        # --- IMPORTANT: Add a check for valid image dimensions and values ---
+        if not (isinstance(width, (int, np.integer)) and isinstance(height, (int, np.integer))):
+            print(f"Error: Image at '{base_image_path_for_this_timestamp}' has non-integer dimensions (width={width}, height={height}). Skipping.")
+            return None
+        if width <= 0 or height <= 0 or not np.isfinite(width) or not np.isfinite(height):
+            print(f"Error: Image at '{base_image_path_for_this_timestamp}' has invalid dimensions (width={width}, height={height}). Skipping image processing for this timestamp.")
+            return None
+        # --- End of IMPORTANT check ---
+
+
+        # --- Check extent values before plotting ---
+        extent = [FINAL_MIN_LON, FINAL_MAX_LON, FINAL_MIN_LAT, FINAL_MAX_LAT]
+        if not all(np.isfinite(extent)):
+            print(f"Error: Extent values are not all finite: {extent}. Skipping image at '{base_image_path_for_this_timestamp}'.")
+            return None
+        if not (FINAL_MIN_LON < FINAL_MAX_LON and FINAL_MIN_LAT < FINAL_MAX_LAT):
+            print(f"Error: Extent min/max values are invalid: {extent}. Skipping image at '{base_image_path_for_this_timestamp}'.")
+            return None
+        print(f"DEBUG: Processing image {base_image_path_for_this_timestamp} with shape {img_np.shape} and extent {extent}")
+
         transform = from_bounds(FINAL_MIN_LON, FINAL_MIN_LAT, FINAL_MAX_LON, FINAL_MAX_LAT, width, height)
         output_images = {
             'cropped_tn': img_pil, # The original radar image of Tamil Nadu
@@ -63,7 +93,7 @@ def _generate_image_data_for_timestamp(
         if selected_district == 'All Districts' or gdf_tn.empty:
             output_images['masked_district'] = img_pil.copy() # Use a copy to avoid unintended modifications
         else:
-            district_rows_for_name = gdf_tn[gdf_tn['NAME_2'].str.lower() == selected_district.lower()]
+            district_rows_for_name = gdf_tn[gdf_tn['dtname'].str.lower() == selected_district.lower()]
             if not district_rows_for_name.empty:
                 all_district_geometries = district_rows_for_name.geometry.to_list()
                 district_polygon_for_mask = unary_union(all_district_geometries)
@@ -87,13 +117,30 @@ def _generate_image_data_for_timestamp(
             else:
                 print(f"Warning: District '{selected_district}' not found in shapefile for masked image generation at {timestamp_dt}.")
                 output_images['masked_district'] = None # Set to None if district geometry isn't found
+        
+        # Ensure fig and ax are created only if image generation is proceeding
         fig, ax = plt.subplots(figsize=(10, 10)) # Adjust figsize as needed for image quality
-        ax.imshow(img_np, extent=[FINAL_MIN_LON, FINAL_MAX_LON, FINAL_MIN_LAT, FINAL_MAX_LAT])
-        gdf_tn.boundary.plot(ax=ax, edgecolor='black', linewidth=0.5)
+        try:
+            ax.imshow(img_np, extent=extent)
+        except Exception as e:
+            print(f"Error: Could not plot image with extent {extent} and shape {img_np.shape}: {e}")
+            plt.close(fig)
+            return None
+        # Only plot if gdf_tn is not empty and has valid geometry
+        if gdf_tn is not None and not gdf_tn.empty and gdf_tn.geometry.notnull().all():
+            try:
+                gdf_tn.boundary.plot(ax=ax, edgecolor='black', linewidth=0.5)
+            except Exception as e:
+                print(f"Error: Could not plot gdf_tn boundary: {e}")
+        else:
+            print(f"Warning: gdf_tn is empty or has invalid geometry, skipping boundary plot for {base_image_path_for_this_timestamp}")
         if selected_district != 'All Districts':
-            district_rows_for_name_for_highlight = gdf_tn[gdf_tn['NAME_2'].str.lower() == selected_district.lower()]
+            district_rows_for_name_for_highlight = gdf_tn[gdf_tn['dtname'].str.lower() == selected_district.lower()]
             if not district_rows_for_name_for_highlight.empty:
-                district_rows_for_name_for_highlight.boundary.plot(ax=ax, edgecolor='cyan', linewidth=2, linestyle='--', label=selected_district)
+                try:
+                    district_rows_for_name_for_highlight.boundary.plot(ax=ax, edgecolor='cyan', linewidth=2, linestyle='--', label=selected_district)
+                except Exception as e:
+                    print(f"Error: Could not plot district highlight boundary: {e}")
                 ax.set_title(f"Aligned Screenshot with {selected_district} Highlighted ({timestamp_dt.strftime('%H:%M')})")
                 ax.legend() # Display legend for highlighted district
             else:
@@ -102,8 +149,16 @@ def _generate_image_data_for_timestamp(
             ax.set_title(f"Aligned Screenshot with All TN District Outlines ({timestamp_dt.strftime('%H:%M')})")
         ax.set_xlabel("Longitude")
         ax.set_ylabel("Latitude")
-        ax.set_aspect('equal')
-        plt.tight_layout() # Adjust layout to prevent labels/titles from overlapping
+    # Check axis limits before setting aspect
+        xlim = ax.get_xlim()
+        ylim = ax.get_ylim()
+        if (np.isfinite(xlim[0]) and np.isfinite(xlim[1]) and np.isfinite(ylim[0]) and np.isfinite(ylim[1]) and (xlim[1] > xlim[0]) and (ylim[1] > ylim[0])):
+            try:
+                ax.set_aspect('equal')
+            except Exception as e:
+                print(f"Warning: Could not set aspect ratio for image at '{base_image_path_for_this_timestamp}': {e}")
+        else:
+            print(f"Warning: Axis limits not finite or valid for image at '{base_image_path_for_this_timestamp}': xlim={xlim}, ylim={ylim}. Skipping aspect setting.")
 
         buffer = io.BytesIO()
         plt.savefig(buffer, format="PNG", bbox_inches='tight', pad_inches=0.1)
@@ -123,6 +178,7 @@ def _generate_image_data_for_timestamp(
         print(f"An unexpected error occurred during image generation for {timestamp_dt}: {e}")
         return None
     finally:
+        # Ensure the figure is closed even if an error occurs after its creation
         if 'fig' in locals() and fig: # Check if 'fig' variable was created
             plt.close(fig)
 
@@ -166,7 +222,7 @@ def report_view(request):
             if from_minute == 60:
                 from_minute = 0
                 current_hour = (current_hour + 1) % 24
-        from_hour = current_hour    
+        from_hour = current_hour     
         start_time_obj = time(from_hour, from_minute)
         selected_start_time_for_template = start_time_obj.strftime("%H:%M")
         filter_start_datetime = datetime.combine(filter_date, start_time_obj)
@@ -218,10 +274,16 @@ def report_view(request):
         if not os.path.exists(SHAPEFILE_PATH):
             raise FileNotFoundError(f"Shapefile not found at {SHAPEFILE_PATH}.")
         gdf = gpd.read_file(SHAPEFILE_PATH)
+        print("Unique stname values in shapefile:", gdf['stname'].unique())
+        # FIX: Use 'stname' to filter for Tamil Nadu districts
         gdf_tn = gdf[
-            (gdf['NAME_1'].str.strip().str.lower() == 'tamilnadu') |
-            (gdf['NAME_1'].str.strip().str.lower() == 'tamil nadu')
+            (gdf['stname'].str.strip().str.lower() == 'tamilnadu') |
+            (gdf['stname'].str.strip().str.lower() == 'tamil nadu')
         ].to_crs("EPSG:4326")
+        # print("gdf_tn is empty:", gdf_tn.empty)
+        # print("gdf_tn columns:", gdf_tn.columns)
+        # print("gdf_tn head:\n", gdf_tn.head())
+        
     except FileNotFoundError as fnfe:
         print(f"CRITICAL ERROR: Shapefile (for generation) not found: {fnfe}")
     except Exception as e:
@@ -315,15 +377,15 @@ def report_view(request):
         else:
             temp_gdf = gpd.read_file(SHAPEFILE_PATH)
             gdf_tn_districts_for_list = temp_gdf[
-                (temp_gdf['NAME_1'].str.strip().str.lower() == 'tamilnadu') |
-                (temp_gdf['NAME_1'].str.strip().str.lower() == 'tamil nadu')
+                (temp_gdf['stname'].str.strip().str.lower() == 'tamilnadu') |
+                (temp_gdf['stname'].str.strip().str.lower() == 'tamil nadu')
             ]
 
-            if 'NAME_2' in gdf_tn_districts_for_list.columns:
-                unique_districts = gdf_tn_districts_for_list['NAME_2'].dropna().unique().tolist()
+            if 'dtname' in gdf_tn_districts_for_list.columns:
+                unique_districts = gdf_tn_districts_for_list['dtname'].dropna().unique().tolist()
                 full_available_districts = sorted(unique_districts)
             else:
-                print("Warning: 'NAME_2' column not found in shapefile for district extraction. Falling back to default list.")
+                print("Warning: 'dtname' column not found in shapefile for district extraction. Falling back to default list.")
                 full_available_districts = ['Coimbatore', 'Chennai', 'Madurai', 'Trichy', 'Salem', 'Ariyalur']
 
     except Exception as e:
@@ -440,9 +502,10 @@ def download_report_pdf(request):
         if not os.path.exists(SHAPEFILE_PATH):
             raise FileNotFoundError(f"Shapefile not found at {SHAPEFILE_PATH}.")
         gdf = gpd.read_file(SHAPEFILE_PATH)
+        # FIX: Use 'stname' to filter for Tamil Nadu districts
         gdf_tn = gdf[
-            (gdf['NAME_1'].str.strip().str.lower() == 'tamilnadu') |
-            (gdf['NAME_1'].str.strip().str.lower() == 'tamil nadu')
+            (gdf['stname'].str.strip().str.lower() == 'tamilnadu') |
+            (gdf['stname'].str.strip().str.lower() == 'tamil nadu')
         ].to_crs("EPSG:4326")
     except FileNotFoundError as fnfe:
         print(f"PDF Gen: CRITICAL ERROR: Shapefile not found: {fnfe}")
