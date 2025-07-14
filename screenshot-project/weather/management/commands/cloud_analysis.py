@@ -30,6 +30,13 @@ import pytz
 
 
 class Command(BaseCommand):
+    # Pass mapping template. Add more passes as needed.
+    PASSES = {
+        'Palakkad': ['Coimbatore', 'Karur', 'Tiruchirappalli', 'Tiruppur'],
+        'Aralvaimozhi': ['Kanyakumari', 'Tirunelveli', ],
+        'Sengottai': ['Ramanathapuram','Tenkasi','Thoothukudi'],
+        'Cumbum': ['Theni'],
+    }
     help = 'Automates screenshot capture from Windy.com, crops to ALL Tamil Nadu districts, masks with shapefile, and analyzes cloud levels.'
 
     BLUE_DOT_XPATH = '//*[@id="leaflet-map"]/div[1]/div[4]/div[2]'
@@ -331,6 +338,19 @@ class Command(BaseCommand):
                 for district_name in all_tn_districts:
                     self.stdout.write(f"\nProcessing district: {district_name} for cloud percentage and DB save...")
 
+                    # Find which pass this district belongs to (case-insensitive, strip spaces)
+                    normalized_district = district_name.strip().lower()
+                    pass_name = None
+                    for p_name, districts in self.PASSES.items():
+                        for d in districts:
+                            if normalized_district == d.strip().lower():
+                                pass_name = p_name
+                                break
+                        if pass_name:
+                            break
+                    # if pass_name is None:
+                    #     pass_name = "No Pass"  # Default value for districts not in any pass
+
                     district_masked_folder = os.path.join(base_folder, "masked_cropped", district_name.replace(" ", "_"))
                     os.makedirs(district_masked_folder, exist_ok=True)
                     masked_cropped_path = os.path.join(district_masked_folder, f"{timestamp_str}_{district_name.lower().replace(' ', '_')}_masked.png")
@@ -393,10 +413,11 @@ class Command(BaseCommand):
                             timestamp=timestamp_for_db, # This is now a timezone-aware datetime object
                             defaults={
                                 "values": cloud_percentage_str, # Store percentage as string
-                                "type": "Cloud Coverage" # Changed type to reflect new analysis
+                                "type": "Cloud Coverage",
+                                "pass_field": pass_name # Save the pass name in the pass_field column
                             }
                         )
-                        self.stdout.write(self.style.SUCCESS(f"Cloud analysis for {district_name} saved to database."))
+                        self.stdout.write(self.style.SUCCESS(f"Cloud analysis for {district_name} saved to database (Pass: {pass_name})."))
                     except Exception as e:
                         self.stderr.write(self.style.ERROR(f"Error saving {district_name} to Django model: {e}"))
 
@@ -404,7 +425,8 @@ class Command(BaseCommand):
                         "city": district_name,
                         "values": cloud_percentage_str, # Use the percentage string
                         "type": "Cloud Coverage",
-                        "timestamp": timestamp_for_db.strftime('%Y-%m-%d %H:%M:%S') # Use the localized timestamp for JSON
+                        "timestamp": timestamp_for_db.strftime('%Y-%m-%d %H:%M:%S'), # Use the localized timestamp for JSON
+                        "pass": pass_name
                     }
                     current_run_results.append(district_data_for_post_collection)
             

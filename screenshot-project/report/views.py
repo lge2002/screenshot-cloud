@@ -274,8 +274,6 @@ def report_view(request):
         if not os.path.exists(SHAPEFILE_PATH):
             raise FileNotFoundError(f"Shapefile not found at {SHAPEFILE_PATH}.")
         gdf = gpd.read_file(SHAPEFILE_PATH)
-        print("Unique stname values in shapefile:", gdf['stname'].unique())
-        # FIX: Use 'stname' to filter for Tamil Nadu districts
         gdf_tn = gdf[
             (gdf['stname'].str.strip().str.lower() == 'tamilnadu') |
             (gdf['stname'].str.strip().str.lower() == 'tamil nadu')
