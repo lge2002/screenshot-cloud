@@ -88,7 +88,7 @@
 <body class="flex flex-col items-center p-8 bg-gray-100">
     <div class="container">
         <h1 class="text-4xl font-bold text-center mb-6 text-indigo-800">Live Cloud Analysis Data</h1>
-          <a href="/report/" class="bg-green-600 rounded-xl text-white px-4 py-2 transition duration-200">Go to Report</a>
+        <a href="/report/" class="bg-green-600 rounded-xl text-white px-4 py-2 transition duration-200">Go to Report</a>
         <div id="loading-indicator" class="text-indigo-600 font-semibold mb-4">Loading live data...</div>
         <p id="last-updated" class="text-gray-600 text-sm mb-4">Last Updated: Never</p>
 
@@ -99,7 +99,8 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-indigo-600 rounded-tl-lg">District</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-indigo-600">Values</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-indigo-600">Type</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-indigo-600 rounded-tr-lg">Timestamp</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-indigo-600">Timestamp</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider bg-indigo-600 rounded-tr-lg">Pass</th>
                     </tr>
                 </thead>
                 <tbody id="live-data-table-body" class="divide-y divide-gray-200">
@@ -111,11 +112,12 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ data.values }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ data.type }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">{{ data.timestamp|date:"Y-m-d H:i:s" }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.pass_field}</td>
                             </tr>
                         {% endfor %}
                     {% else %}
                         <tr id="no-data-row">
-                            <td colspan="4" class="no-data-message">No cloud analysis data available in the database.</td>
+                            <td colspan="5" class="no-data-message">No cloud analysis data available in the database.</td>
                         </tr>
                     {% endif %}
                 </tbody>
@@ -151,13 +153,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.values}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.type}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.timestamp}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-800">${item.pass_field ?? ''}</td>
                             `;
                             tableBody.appendChild(row);
                         });
                     } else {
                         const row = document.createElement('tr');
                         row.id = 'no-data-row';
-                        row.innerHTML = `<td colspan="4" class="no-data-message">No cloud analysis data available in the database.</td>`;
+                        // Changed colspan to 5 to match the number of columns including 'Pass'
+                        row.innerHTML = `<td colspan="5" class="no-data-message">No cloud analysis data available in the database.</td>`;
                         tableBody.appendChild(row);
                     }
 
@@ -177,7 +181,7 @@
         fetchLiveData();
         setInterval(fetchLiveData, 10000); // every 10 seconds
     });
-</script>
+    </script>
 
 </body>
 </html>

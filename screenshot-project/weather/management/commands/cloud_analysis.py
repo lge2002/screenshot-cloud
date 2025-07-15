@@ -348,7 +348,7 @@ class Command(BaseCommand):
                                 break
                         if pass_name:
                             break
-                    # if pass_name is None:
+                    # if pass_name is None:``
                     #     pass_name = "No Pass"  # Default value for districts not in any pass
 
                     district_masked_folder = os.path.join(base_folder, "masked_cropped", district_name.replace(" ", "_"))
@@ -426,7 +426,7 @@ class Command(BaseCommand):
                         "values": cloud_percentage_str, # Use the percentage string
                         "type": "Cloud Coverage",
                         "timestamp": timestamp_for_db.strftime('%Y-%m-%d %H:%M:%S'), # Use the localized timestamp for JSON
-                        "pass": pass_name
+                        "pass_field": pass_name
                     }
                     current_run_results.append(district_data_for_post_collection)
             
