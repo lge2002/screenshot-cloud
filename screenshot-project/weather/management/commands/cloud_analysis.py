@@ -426,7 +426,7 @@ class Command(BaseCommand):
                         "values": cloud_percentage_str, # Use the percentage string
                         "type": "Cloud Coverage",
                         "timestamp": timestamp_for_db.strftime('%Y-%m-%d %H:%M:%S'), # Use the localized timestamp for JSON
-                        "pass_field": pass_name
+                        "pass": pass_name
                     }
                     current_run_results.append(district_data_for_post_collection)
             
